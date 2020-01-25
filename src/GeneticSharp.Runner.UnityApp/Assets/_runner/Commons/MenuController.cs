@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.Advertisements;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -29,18 +28,10 @@ public class MenuController : MonoBehaviour {
         Logo.enabled = false;
         m_selectedSceneName = sceneName;
 
-        if (Advertisement.IsReady() && !sceneName.Equals("About"))
-        {
-            var options = new ShowOptions { resultCallback = OpenScene };
-            Advertisement.Show(options);
-        }
-        else
-        {
-            OpenScene(ShowResult.Skipped);
-        }
+        OpenScene();
     }
 
-    void OpenScene(ShowResult result)
+    void OpenScene()
     {
         CurrentInfo.transform.position = new Vector3(CurrentInfo.transform.position.x, 60, 0);
         PreviousInfo.transform.position = new Vector3(PreviousInfo.transform.position.x, 60, 0);

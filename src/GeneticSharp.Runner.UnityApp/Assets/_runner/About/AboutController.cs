@@ -14,11 +14,6 @@ public class AboutController : MonoBehaviour {
         Application.OpenURL("http://diegogiacomelli.com.br");
     }
 
-    public void OpenDataPrivacyUrl()
-    {
-        DataPrivacy.FetchPrivacyUrl(OnURLReceived, OnFailure);
-    }
-
     static void OnFailure(string reason)
     {
         Debug.LogWarning(String.Format("Failed to get data privacy page URL: {0}", reason));
