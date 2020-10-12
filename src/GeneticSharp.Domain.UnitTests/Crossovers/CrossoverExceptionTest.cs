@@ -5,7 +5,7 @@ using GeneticSharp.Domain.Crossovers;
 using NUnit.Framework;
 using NSubstitute;
 
-namespace GeneticSharp.Domain.UnitTests.Chromosomes
+namespace GeneticSharp.Domain.UnitTests.Crossovers
 {
     [Category("Crossovers")]
     [TestFixture]
@@ -31,6 +31,24 @@ namespace GeneticSharp.Domain.UnitTests.Chromosomes
             var target = new CrossoverException("1", new Exception("2"));
             Assert.AreEqual("1", target.Message);
             Assert.AreEqual("2", target.InnerException.Message);
+        }
+
+        [Test]
+        public void Constructor_CrossoverAndMessage_CrossoverAndMessage()
+        {
+            var target = new CrossoverException(Substitute.For<ICrossover>(), "1");
+            Assert.IsNotNull(target.Crossover);
+            Assert.AreEqual(target.Crossover.GetType().Name + ": 1", target.Message);
+            Assert.IsNull(target.InnerException);
+        }
+
+        [Test]
+        public void Constructor_CrossoverNullAndMessage_CrossoverAndMessage()
+        {
+            var target = new CrossoverException((ICrossover) null, "1");
+            Assert.IsNull(target.Crossover);
+            Assert.AreEqual(": 1", target.Message);
+            Assert.IsNull(target.InnerException);
         }
 
         [Test]
