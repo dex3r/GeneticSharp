@@ -363,6 +363,9 @@ namespace GeneticSharp.Domain
             var parents = SelectParents();
             var offspring = Cross(parents);
             Mutate(offspring);
+            
+            EvaluateFitness(offspring);
+            
             var newGenerationChromosomes = Reinsert(offspring, parents);
             Population.CreateNewGeneration(newGenerationChromosomes);
             return EndCurrentGeneration();
@@ -399,14 +402,19 @@ namespace GeneticSharp.Domain
             return false;
         }
 
+        private void EvaluateFitness()
+        {
+            EvaluateFitness(Population.CurrentGeneration.Chromosomes);
+        }
+
         /// <summary>
         /// Evaluates the fitness.
         /// </summary>
-        private void EvaluateFitness()
+        private void EvaluateFitness(IList<IChromosome> chromosomes)
         {
             try
             {
-                var chromosomesWithoutFitness = Population.CurrentGeneration.Chromosomes.Where(c => !c.Fitness.HasValue).ToList();
+                var chromosomesWithoutFitness = chromosomes.Where(c => !c.Fitness.HasValue).ToList();
 
                 for (int i = 0; i < chromosomesWithoutFitness.Count; i++)
                 {
@@ -456,7 +464,22 @@ namespace GeneticSharp.Domain
         /// <returns>The parents.</returns>
         private IList<IChromosome> SelectParents()
         {
-            return Selection.SelectChromosomes(Population.MinSize, Population.CurrentGeneration);
+            int beforeSelectionCount = Population.CurrentGeneration.Chromosomes.Count;
+
+            IList<IChromosome> parents = Selection.SelectChromosomes(Population.MinSize, Population.CurrentGeneration);
+            if (parents.Count == 0)
+            {
+                Debug.WriteLine("Parents count is 0!");
+                return Population.CurrentGeneration.Chromosomes;
+            }
+
+            int afterCount = parents.Count;
+            if(beforeSelectionCount != afterCount)
+			{
+                Debug.WriteLine($"Prev != after! Prev: {beforeSelectionCount} after: {afterCount}");
+			}
+
+            return parents;
         }
 
         /// <summary>

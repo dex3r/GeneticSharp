@@ -20,7 +20,7 @@ namespace GeneticSharp.Domain.Reinsertions
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneticSharp.Domain.Reinsertions.FitnessBasedReinsertion"/> class.
         /// </summary>
-        public FitnessBasedReinsertion() : base(true, false)
+        public FitnessBasedReinsertion() : base(true, true)
         {
         }
         #endregion
