@@ -16,12 +16,15 @@ namespace GeneticSharp.Domain.Reinsertions
     [DisplayName("Elitist")]
     public class ElitistReinsertion : ReinsertionBase
     {
+        private readonly bool _preserveBestOrganism;
+
         #region Constructors
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneticSharp.Domain.Reinsertions.ElitistReinsertion"/> class.
         /// </summary>
-        public ElitistReinsertion() : base(false, true)
+        public ElitistReinsertion(bool preserveBestOrganism = false) : base(false, true)
         {
+            _preserveBestOrganism = preserveBestOrganism;
         }
         #endregion
 
@@ -46,7 +49,13 @@ namespace GeneticSharp.Domain.Reinsertions
                     offspring.Add(bestParents[i]);
                 }
             }
-
+            
+            IChromosome bestChromosome = population.BestChromosome;
+            if (_preserveBestOrganism && bestChromosome != null && offspring.Any(x => ReferenceEquals(x, bestChromosome)) == false)
+            {
+                offspring.Insert(0, bestChromosome);
+            }
+            
             return offspring;
         }
         #endregion

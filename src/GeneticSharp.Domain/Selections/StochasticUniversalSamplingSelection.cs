@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using GeneticSharp.Domain.Chromosomes;
 using GeneticSharp.Domain.Populations;
 using GeneticSharp.Domain.Randomizations;
@@ -27,13 +28,16 @@ namespace GeneticSharp.Domain.Selections
     [DisplayName("Stochastic Universal Sampling")]
     public class StochasticUniversalSamplingSelection : RouletteWheelSelection
     {
+        private readonly bool _preserveBestOrganism;
+
         #region Constructors
         /// <summary>
         /// Initializes a new instance of the
         /// <see cref="GeneticSharp.Domain.Selections.StochasticUniversalSamplingSelection"/> class.
         /// </summary>
-        public StochasticUniversalSamplingSelection()
+        public StochasticUniversalSamplingSelection(bool preserveBestOrganism = false)
         {
+            _preserveBestOrganism = preserveBestOrganism;
         }
         #endregion
 
@@ -56,7 +60,7 @@ namespace GeneticSharp.Domain.Selections
 
             var pointer = RandomizationProvider.Current.GetDouble();
 
-            return SelectFromWheel(
+            IList<IChromosome> result = SelectFromWheel(
                 number,
                 chromosomes,
                 rouleteWheel,
@@ -72,6 +76,15 @@ namespace GeneticSharp.Domain.Selections
 
                     return currentPointer;
                 });
+
+            IChromosome bestChromosome = generation.BestChromosome;
+
+            if (_preserveBestOrganism && bestChromosome != null && result.Any(x => ReferenceEquals(x, bestChromosome)) == false)
+            {
+                result.Add(bestChromosome);
+            }
+
+            return result;
         }
         #endregion
     }
