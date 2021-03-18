@@ -5,6 +5,7 @@ using System.Linq;
 using GeneticSharp.Domain.Chromosomes;
 using GeneticSharp.Domain.Crossovers;
 using GeneticSharp.Domain.Fitnesses;
+using GeneticSharp.Domain.MatiEvolve;
 using GeneticSharp.Domain.Mutations;
 using GeneticSharp.Domain.Populations;
 using GeneticSharp.Domain.Reinsertions;
@@ -259,6 +260,8 @@ namespace GeneticSharp.Domain
         /// Gets or sets the task executor which will be used to execute fitness evaluation.
         /// </summary>
         public ITaskExecutor TaskExecutor { get; set; }
+        
+        public IStatisticsCollector StatisticsCollector { get; set; }
         #endregion
 
         #region Methods
@@ -360,12 +363,45 @@ namespace GeneticSharp.Domain
         /// <returns>True if termination has been reached, otherwise false.</returns>
         private bool EvolveOneGeneration()
         {
+            if (StatisticsCollector != null)
+            {
+                return EvolveOneGenerationWithStatistics();
+            }
+            
+            return EvolveOneGenerationSimple();
+        }
+
+        private bool EvolveOneGenerationSimple()
+        {
             var parents = SelectParents();
             var offspring = Cross(parents);
             Mutate(offspring);
             var newGenerationChromosomes = Reinsert(offspring, parents);
             Population.CreateNewGeneration(newGenerationChromosomes);
             return EndCurrentGeneration();
+        }
+
+        private bool EvolveOneGenerationWithStatistics()
+        {
+            StatisticsCollector.NoteChromosomesAtPhase(GenerationEvolutionPhase.Beginning, Population.CurrentGeneration.Chromosomes);
+            
+            var parents = SelectParents();
+            StatisticsCollector.NoteChromosomesAtPhase(GenerationEvolutionPhase.SelectedParents, parents);
+            
+            var offspring = Cross(parents);
+            Mutate(offspring);
+            StatisticsCollector.NoteChromosomesAtPhase(GenerationEvolutionPhase.Offspring, offspring);
+            
+            var newGenerationChromosomes = Reinsert(offspring, parents);
+            StatisticsCollector.NoteChromosomesAtPhase(GenerationEvolutionPhase.Reinserted, newGenerationChromosomes);
+            
+            Population.CreateNewGeneration(newGenerationChromosomes);
+            StatisticsCollector.NoteChromosomesAtPhase(GenerationEvolutionPhase.NewGenerationCreated, Population.CurrentGeneration.Chromosomes);
+            
+            bool result = EndCurrentGeneration();
+            StatisticsCollector.NoteChromosomesAtPhase(GenerationEvolutionPhase.GenerationEnded, Population.CurrentGeneration.Chromosomes);
+
+            return result;
         }
 
         /// <summary>
